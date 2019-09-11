@@ -12,11 +12,14 @@ python manage.py runserver
 
 ### Routes
 Host: http://127.0.0.1:8000/
-##### weather
+##### API
 GET /api/weather/
-params required: latitude, longitude.
+###### params 
+```
+required: latitude, longitude.
 filters: accuweather, noaa and weatherdotcom.
-Example:
+```
+###### Example
 http://127.0.0.1:8000/api/weather/?accuweather&noaa&weatherdotcom&latitude=-78.416226&longitude=-5.717964
 
 
