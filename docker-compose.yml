@@ -1,0 +1,10 @@
+version: '3.1'
+services:      
+  weather:
+    build: .
+    image: weather
+    command: ./manage.py runserver 0:80
+    volumes:
+      - .:/app
+    ports:
+      - 8001:80
