@@ -3,34 +3,30 @@ from rest_framework.response import Response
 from ..weatherApi import WeatherApi, WAConsumerAPIException
 from .serializers import WeatherSerializer
 import statistics
+from ..utils import get_average,is_valid_latitude, is_valid_longitude
 
 class WeatherView(views.APIView):
+    """API Weather. Allowed method GET"""
 
     def get(self, request):
-        results = []
         latitude = self.request.query_params.get('latitude', None)
         longitude = self.request.query_params.get('longitude', None)
         accuweather = self.request.query_params.get('accuweather', None)
         noaa = self.request.query_params.get('noaa', None)
         weatherdotcom = self.request.query_params.get('weatherdotcom', None)
+        if not( is_valid_latitude(latitude) and is_valid_longitude(longitude) ):
+            return Response(
+                {'message': 'latitude and longitude are required.'},
+                status=status.HTTP_400_BAD_REQUEST)
 
-        if not(latitude and longitude):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        weatherapi = WeatherApi()
+        if accuweather==None and noaa==None and weatherdotcom==None:
+            return Response(
+                {'message': 'At least one filter is required. [accuweather, noaa, weatherdotcom]'},
+                status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            if accuweather != None:
-                res = weatherapi.accuweather(latitude,longitude)
-                res = weatherapi.parse_accuweather(res)
-                results.append(res)
-            if noaa != None:
-                res = weatherapi.noaa(latitude,longitude)
-                res = weatherapi.parse_noaa(res)
-                results.append(res)
-            if weatherdotcom != None:
-                res = weatherapi.weatherdotcom(latitude,longitude)
-                res = weatherapi.parse_weatherdotcom(res)
-                results.append(res)
-            mean = statistics.mean(results)
+            """obtain the average weather"""
+            mean = get_average(latitude, longitude, accuweather, noaa, weatherdotcom)
             content = WeatherSerializer({'average':mean}).data
         except Exception as e:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
